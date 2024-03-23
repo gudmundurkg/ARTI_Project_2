@@ -26,20 +26,12 @@ def apply_kalman_filter(flight):
     if 'x' not in flight.data.columns or 'y' not in flight.data.columns:
         raise ValueError("Flight data must contain 'x' and 'y' columns")
 
-    initial_groundspeed = flight.data.groundspeed.iloc[0]
-    initial_track = math.radians(flight.data.track.iloc[0])  # Convert to radians for math trig functions
-
-    initial_vx = initial_groundspeed * math.cos(initial_track)
-    initial_vy = initial_groundspeed * math.sin(initial_track)
-
     Delta_t = 10  # Time step in seconds
 
 
     # Initialize the Kalman Filter
     kf = KalmanFilter(dim_x=4, dim_z=2)
-    # kf.x = np.array([flight.data.x.iloc[0], 0, flight.data.y.iloc[0], 0])  # Assuming initial velocities are zero
-    kf.x = np.array([flight.data.x.iloc[0], initial_vx, flight.data.y.iloc[0], initial_vy])
-    # kf.F = np.array([[1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 1]])
+    kf.x = np.array([flight.data.x.iloc[0], 0, flight.data.y.iloc[0], 0])  # Assuming initial velocities are zero
     kf.F = np.array([
     [1, Delta_t, 0, 0],
     [0, 1, 0, 0],
