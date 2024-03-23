@@ -7,6 +7,7 @@ from cartes.crs import Mercator
 import matplotlib.pyplot as plt
 import copy
 import pandas as pd
+from geopy.distance import distance
 
 def show_plot(flight, title, sub_title=None):
     """ Displays the plot of the provided flight data """
@@ -125,7 +126,9 @@ def main():
     # filtered_flight_2 = apply_kalman_filter2(flight_copy_2)
     # show_plot(filtered_flight_2, "Filtered Data 2 ", flight_name)
     
-
+    distances = [distance(original, filtered).km for original, filtered in zip(unfiltered_radar_data.data[["latitude", "longitude"]].values, filtered_flight.data[["latitude", "longitude"]].values)]
+    print(f"Mean distance between original and filtered data: {np.mean(distances): 4f} km")
+    print(f"Maximal distance between original and filtered data: {np.max(distances): 4f} km")
 
 
 #############################
