@@ -97,15 +97,40 @@ def apply_kalman_filter2(flight):
 
 def main():
     flights = get_ground_truth_data()
-    flight_name = '9MFCL_032'     
+    flights_list = [
+    "9MFCL_032", "IGRAD_000", "PXR31F_001", "N441FS_002", "N441FS_003",
+    "OKVOK_004", "FGALN_005", "FGALN_006", "HAYCG_007", "FGALN_008",
+    "FAF4011_009", "PSWRD35_010", "F-CHDN_011", "D-KRPK_012", "D-6567_013",
+    "SS_014", "F-CIJO_015", "G-CLPU_016", "D-KWFW_017", "REGA1_018",
+    "SAMU31_019", "REGA1_020", "CALIBRA_021", "YS111N_022", "VOR05_023",
+    "GTACN_024", "ADA4_025", "CALIBRA_026", "CALIBRA_027", "CALIBRA_028",
+    "CALIBRA_029", "GTACN_030", "ADA4_031", "9MFCL_032", "NVC201_033",
+    "VOR05_034", "CALIBRA_035", "FCK211_036", "NVC103_037", "VOR05_038",
+    "CALIBRA_039", "CFL12_040", "CFL12_041", "YS111N_042", "CALIBRA_043",
+    "FCK211_044", "GTEKV_045", "BOE004_046", "N56821_047", "ZEROG_048",
+    "QFA7474_049", "THY1920_050", "AIB232E_051", "DMUPY_052", "TRA051_053",
+    "VHOMS_054", "HAXAE_055", "OOLET_056"
+    ]
+
+    
+    flight_name = 'FAF4011_009'     
     flight = flights[flight_name]
     # DMUPY_052
+    # Mean distance between original and filtered data:  1.168052 km
+    # Maximal distance between original and filtered data:  5.468760 km
     # CALIBRA_039
+    # Mean distance between original and filtered data:  1.043040 km
+    # Maximal distance between original and filtered data:  5.470307 km   
     # 9MFCL_032
+    # Mean distance between original and filtered data:  0.504637 km
+    # Maximal distance between original and filtered data:  2.029270 km
     # VHOMS_054
+    # Mean distance between original and filtered data:  0.969023 km
+    # Maximal distance between original and filtered data:  4.427027 km
     # pd.set_option('display.max_columns', None)
     # print(flight.data.head())
-    # show_plot(flight, flight_name)
+    show_plot(flight, flight_name)
+    exit()
 
 
     unfiltered_radar_data = get_radar_data_for_flight(flight)
@@ -113,6 +138,62 @@ def main():
 
     radar_data = get_radar_data(flights)
 
+    flight_distances = {}
+
+    for flight_name in flights_list:
+        flight_copy = copy.deepcopy(radar_data[flight_name])
+        filtered_flight = apply_kalman_filter(flight_copy)
+
+        unfiltered_radar_data = get_radar_data_for_flight(flights[flight_name])
+        distances = [distance(original, filtered).km for original, filtered in zip(unfiltered_radar_data.data[["latitude", "longitude"]].values, filtered_flight.data[["latitude", "longitude"]].values)]
+
+        mean_distance = np.mean(distances)
+        max_distance = np.max(distances)
+        flight_distances[flight_name] = {'mean_distance': mean_distance, 'max_distance': max_distance}
+
+    # Convert dictionary to a list of tuples and sort by mean distance
+    sorted_flights_by_mean = sorted(flight_distances.items(), key=lambda item: item[1]['mean_distance'])
+    # Extracting the flight names and distances for top 5 smallest and highest mean distances
+    top_5_smallest_mean = [(flight, metrics['mean_distance'], metrics['max_distance']) for flight, metrics in sorted_flights_by_mean[:5]]
+    top_5_highest_mean = [(flight, metrics['mean_distance'], metrics['max_distance']) for flight, metrics in sorted_flights_by_mean[-5:]]
+
+    print("Top 5 flights with the smallest mean distances:")
+    for flight, mean_distance, max_distance in top_5_smallest_mean:
+        print(f"{flight}: Mean distance = {mean_distance:.6f} km, Max distance = {max_distance:.6f} km")
+
+    print("\nTop 5 flights with the highest mean distances:")
+    for flight, mean_distance, max_distance in top_5_highest_mean:
+        print(f"{flight}: Mean distance = {mean_distance:.6f} km, Max distance = {max_distance:.6f} km")
+
+
+
+
+    # flight_mean_distances = []
+
+
+    # for flight_name in flights_list:
+    #     flight_copy = copy.deepcopy(radar_data[flight_name])
+    #     filtered_flight = apply_kalman_filter(flight_copy)
+
+    #     unfiltered_radar_data = get_radar_data_for_flight(flights[flight_name])
+    #     distances = [distance(original, filtered).km for original, filtered in zip(unfiltered_radar_data.data[["latitude", "longitude"]].values, filtered_flight.data[["latitude", "longitude"]].values)]
+
+    #     mean_distance = np.mean(distances)
+    #     max_distance = np.max(distances)
+    #     flight_mean_distances.append((flight_name, mean_distance, max_distance))
+
+
+    # flight_mean_distances.sort(key=lambda x: x[1])
+    # top_5_smallest_mean = flight_mean_distances[:5]
+    # top_5_highest_mean = flight_mean_distances[-5:]
+
+    # print("Top 5 flights with the smallest mean distances:")
+    # for flight, mean_distance in top_5_smallest_mean:
+    #     print(f"{flight}: {mean_distance:.6f} km {max_distance:.6f} km")
+
+    # print("\nTop 5 flights with the highest mean distances:")
+    # for flight, mean_distance in top_5_highest_mean:
+    #     print(f"{flight}: {mean_distance:.6f} km {max_distance:.6f} km")
     # Task 2: Plot sample flight
     # Task 3: Plot the original and the radar data for a single flight
     # show_plot(radar_data[flight_name], "Radar Data", flight_name)
@@ -120,15 +201,15 @@ def main():
 
     # Task 4: Apply Kalman filter to the radar data
     # flight_copy_2 = copy.deepcopy(radar_data[flight_name])
-    flight_copy = copy.deepcopy(radar_data[flight_name])
-    filtered_flight = apply_kalman_filter(flight_copy)
-    show_plot(filtered_flight, "Filtered Data", flight_name)
+    # flight_copy = copy.deepcopy(radar_data[flight_name])
+    # filtered_flight = apply_kalman_filter(flight_copy)
+    # show_plot(filtered_flight, "Filtered Data", flight_name)
     # filtered_flight_2 = apply_kalman_filter2(flight_copy_2)
     # show_plot(filtered_flight_2, "Filtered Data 2 ", flight_name)
     
-    distances = [distance(original, filtered).km for original, filtered in zip(unfiltered_radar_data.data[["latitude", "longitude"]].values, filtered_flight.data[["latitude", "longitude"]].values)]
-    print(f"Mean distance between original and filtered data: {np.mean(distances): 4f} km")
-    print(f"Maximal distance between original and filtered data: {np.max(distances): 4f} km")
+    # distances = [distance(original, filtered).km for original, filtered in zip(unfiltered_radar_data.data[["latitude", "longitude"]].values, filtered_flight.data[["latitude", "longitude"]].values)]
+    # print(f"Mean distance between original and filtered data: {np.mean(distances): 4f} km")
+    # print(f"Maximal distance between original and filtered data: {np.max(distances): 4f} km")
 
 
 #############################
