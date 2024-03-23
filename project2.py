@@ -122,7 +122,7 @@ def main():
             dist_max = np.max(distances)
             save_plot(filtered_flight, "Filtered Data", f"sigma_p {p}, sigma_o {o}")
             #show_plot(filtered_flight, f"Filtered Data: sigma_p: {p}, sigma_o: {o}", flight_name)
-            res.append([flight_name, dist_mean, dist_max, sigma_p, sigma_o])
+            res.append([flight_name, dist_mean, dist_max, p, o])
 
     res.sort(key=lambda x: x[1])  # Sort by mean distance
     print("Top 5 flights with the lowest mean distances:")
